@@ -1,24 +1,24 @@
 # Udacity-Linux-Server-Configuration
 Udacity Linux Server Configuration
 
-1. Update all packages
+## Update all packages
 - `sudo apt-get update`
 - `sudo apt-get dist-upgrade`
 
 
-2. Create a user called "grader"
+## Create a user called "grader"
 - `sudo adduser grader`
 
 
-3. Give grader admin rights
+## Give grader admin rights
 - `sudo usermod -aG sudo grader`
 - `su - grader’ && ‘sudo whoami` // validate output is 'root'
 
-4. Setup SSH key for grader
-a. Create the directory and set file permissions
+## Setup SSH key for grader
+- a. Create the directory and set file permissions
 - `mkdir -p $HOME/.ssh` // Create a .ssh directory
 - `chmod 0700 $HOME/.ssh` // Modify permissions so only grader can read, write, and execute
-b. Temporarily allow password authentication to easily copy over ssh key
+- b. Temporarily allow password authentication to easily copy over ssh key
 - `sudo nano /etc/ssh/sshd_config`
 - Set PasswordAuthentication to yes (if not yes by default), press 'CTRL + X' and 'y' to exit and confirm save
 - `sudo service ssh restart` // Restart ssh service for changes to take effect
@@ -29,39 +29,39 @@ b. Temporarily allow password authentication to easily copy over ssh key
 - Set PasswordAuthentication back to no to force SSH then press 'CTRL + X' and 'y' to exit and confirm save
 - `sudo service ssh restart`
 - `ssh grader@52.87.206.125 -i ~/.ssh/grader` // SSH into server to confirm key is working
-c. Change default SSH port to 2200
+- c. Change default SSH port to 2200
 - `sudo nano /etc/ssh/sshd_config` 
 - Replace ‘#Port 22’ with ‘Port 2200’ 
 - `sudo systemctl restart ssh`
-d. Edit your firewall rules in the LightSail networking tab
+- d. Edit your firewall rules in the LightSail networking tab
 - Add a new rule, select 'Custom' for the Application column and '2200' for the port range
 - Delete the first rule which allows SSH on Port 22
-e. Check SSH is working on Port 2200
+- e. Check SSH is working on Port 2200
 - Back in the terminal, type `systemctl ssh restart && exit`
 - `ssh grader@52.87.206.125 -p 2200 -i ~/.ssh/grader`
 
 
-5. Configure Firewall Settings
+## 5. Configure Firewall Settings
 - `sudo ufw default deny incoming; sudo ufw default allow outgoing;`
 - `sudo ufw allow 2222/tcp; sudo ufw allow http; sudo ufw allow ntp`
 - `sudo ufw enable && sudo ufw status` // Turn on firewall and validate ports are set up correctly
 - `exit` and then `ssh grader@54.152.4.245 -p 2200 -i ~/.ssh/grader` to ensure its working
 
 
-6. Set timezone to UTC
+## 6. Set timezone to UTC
 - `timedatectl set-timezone UTC`
 - To validate: `timedatectl status`
 
 
-7. Install Apache and mod_wsgi 
+## 7. Install Apache and mod_wsgi 
 - `sudo apt-get install apache2`
 - `curl http://localhost` to validate apache is online
 - `sudo apt-get install libapache2-mod-wsgi python-dev`
 - Restart apache `systemctl restart apache2`
-- source: https://www.digitalocean.com/community/tutorials/how-to-set-up-an-apache-mysql-and-python-lamp-server-without-frameworks-on-ubuntu-14-04
+- [Source](https://www.digitalocean.com/community/tutorials/how-to-set-up-an-apache-mysql-and-python-lamp-server-without-frameworks-on-ubuntu-14-04)
 
 
-8. Install and setup PostgreSQL database with catalog user
+## 8. Install and setup PostgreSQL database with catalog user
 - `sudo apt-get install postgresql postgresql-contrib`
 - `sudo apt-get install libpq-dev python-dev`
 - `sudo nano /etc/postgresql/10/main/pg_hba.conf` // Make sure remote connections are disabled (should be by default)
@@ -77,24 +77,24 @@ e. Check SSH is working on Port 2200
 - Quit with `\q` and return to grader user with `exit`
 
 
-9. Setup Python project
-a. Install Git
+## 9. Setup Python project
+- a. Install Git
 - `sudo apt install git-all`
-b. Setup directory
+- b. Setup directory
 - `cd /var/www/html` // Directory you want to clone repository into
 - `Git clone https://github.com/Defiled/Pokedex.git`
 - `sudo chown -R grader:grader /var/www/Pokedex/`
-c. Install libraries, tools and dependencies 
+- c. Install libraries, tools and dependencies 
 - `sudo apt-get -qq install python python-pip`
 - `sudo pip install flask sqlalchemy flask-sqlalchemy psycopg2-binary httlib2 oauth2client requests`
-d. Convert to PostgreSQL from SQLite
+- d. Convert to PostgreSQL from SQLite
 - `sudo nano /var/www/Pokedex/db_populate.py`
 - Change "engine = create_engine('sqlite:///pokedex.db’)” to “engine = create_engine('postgresql://catalog:catalog@localhost/pokedex’)”
 - Do the same in db_populate.py and project.py
 
 
-10. Configure Apache and mod_wsgi
-a. Setup Apache config file
+## 10. Configure Apache and mod_wsgi
+- a. Setup Apache config file
 - `sudo nano /etc/apache2/sites-available/Pokedex.conf`
 - Insert the following:
 ```
@@ -121,7 +121,7 @@ a. Setup Apache config file
 ```
 - `systemctl reload apache2` // Restart the apache server
 - `sudo a2ensite Pokedex` // Enable site
-b. Create .wsgi script file
+- b. Create .wsgi script file
 - `sudo nano pokedex.wsgi` 
 - Insert the following:
 ```
@@ -134,17 +134,17 @@ sys.path.insert(1, "/var/www/")
 from Pokedex import app as application
 application.secret_key = 'pikachu'
 ```
-c. Project tweaks
+- c. Project tweaks
 - `sudo mv project.py __init__.py` so that python knows to treat the Pokedex directory as a module
 - `sudo nano __init__.py` and update the CLIENT_ID variable to load the absolute path of the file it now lives in
 
 
-11. Finish setup
-a. Setup and populate the PostgreSQL database
+## 11. Finish setup
+- a. Setup and populate the PostgreSQL database
 - `Python db_setup.py`
 - `Python db_populate.py`
 - `systemctl reload apache2`
-b. Connect to server
+- b. Connect to server
 - `sudo cat /var/log/apache2/error.log` to debug any issues
 
 
