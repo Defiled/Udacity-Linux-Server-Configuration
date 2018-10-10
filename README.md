@@ -1,6 +1,8 @@
 # Udacity-Linux-Server-Configuration
 Udacity Linux Server Configuration
 
+Site can be accessed publicly at http://52.20.134.48
+
 ## Update all packages
 - `sudo apt-get update`
 - `sudo apt-get dist-upgrade`
@@ -147,9 +149,3 @@ application.secret_key = 'pikachu'
   - `systemctl reload apache2`
 - b. Connect to server
   - `sudo cat /var/log/apache2/error.log` to debug any issues
-
-
-Extra
-- Update DNS and have my purchased domain point to public IP address
-- Add domain to facebook and oauth developer console and update secrets
-http://xip.io/
