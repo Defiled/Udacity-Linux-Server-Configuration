@@ -33,7 +33,8 @@ Site can be accessed publicly at http://52.20.134.48
   - `ssh grader@52.87.206.125 -i ~/.ssh/grader` // SSH into server to confirm key is working
 - c. Change default SSH port to 2200
   - `sudo nano /etc/ssh/sshd_config` 
-  - Replace ‘#Port 22’ with ‘Port 2200’ 
+  - Replace ‘#Port 22’ with ‘Port 2200’
+  - Uncomment ProhibitRootLogin and set it to no to prevent brute force attacks on the root user
   - `sudo systemctl restart ssh`
 - d. Edit your firewall rules in the LightSail networking tab
   - Add a new rule, select 'Custom' for the Application column and '2200' for the port range
